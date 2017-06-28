@@ -1,9 +1,10 @@
 {
-	"name": "ChronoMintApp",
+	"name": "chronomint-app",
 	"version": "0.0.1",
-	"private": true,
 	"scripts": {
 		"start": "node node_modules/react-native/local-cli/cli.js start",
+		"build-web": "cd ChronoMint && yarn install && yarn run build && cp -r ./build ../ios/build && mkdir ../android/app/src/main/assets/ && cp -r  ./build/ ../android/app/src/main/assets/build && cd ..",
+		"clear-web": "rm -rf ./ChronoMint/build ./ChronoMint/node_modules ./ios/build ./android/app/src/main/assets/build",
 		"test": "jest"
 	},
 	"dependencies": {

@@ -103,16 +103,6 @@ android {
             abiFilters "armeabi-v7a", "x86"
         }
     }
-    signingConfigs {
-        release {
-            if (project.hasProperty('CHRONOMINT_RELEASE_STORE_FILE')) {
-                storeFile file(CHRONOMINT_RELEASE_STORE_FILE)
-                storePassword CHRONOMINT_RELEASE_STORE_PASSWORD
-                keyAlias CHRONOMINT_RELEASE_KEY_ALIAS
-                keyPassword CHRONOMINT_RELEASE_KEY_PASSWORD
-            }
-        }
-    }
     splits {
         abi {
             reset()
@@ -123,7 +113,6 @@ android {
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

@@ -27,13 +27,13 @@ export default class ChronoMintApp extends Component {
 
         await RNFS.mkdir(serverPath)
 
-        const files = await RNFS.readDirAssets('build')
+        const files = await RNFS.readDirAssets('www')
 
         await Promise.all(files.map(({ path, name }) => {
           RNFS.copyFileAssets(path, `${serverPath}/${name}`)
         }))
       } else {
-        serverPath = RNFS.MainBundlePath + '/build'
+        serverPath = RNFS.MainBundlePath + '/www'
       }
       
       server = new StaticServer(0, serverPath, { localOnly: true });

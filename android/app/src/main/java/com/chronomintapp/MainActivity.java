@@ -1,6 +1,8 @@
 package com.chronomintapp;
 
 import com.facebook.react.ReactActivity;
+import com.futurepress.staticserver.FPStaticServerPackage;
+import com.rnfs.RNFSPackage;
 
 public class MainActivity extends ReactActivity {
 

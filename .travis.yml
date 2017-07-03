@@ -1,0 +1,90 @@
+language: generic
+branches:
+  only:
+  - master
+  - /^travis/
+  - /^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?$/
+matrix:
+  fast_finish: true
+  include:
+  - language: android
+    os: linux
+    dist: trusty
+    jdk: oraclejdk8
+    node_js: false
+    android:
+      components:
+      - tools
+      - platform-tools
+      - android-23
+      - extra-android-support
+      - extra-android-m2repository
+      - extra-google-google_play_services
+      - extra-google-m2repository
+      - addon-google_apis-google-16
+      - build-tools-25.0.0
+      - build-tools-23.0.1
+      licenses:
+      - android-sdk-preview-license-.+
+      - android-sdk-license-.+
+      - google-gdk-license-.+
+    before_install:
+    - nvm install 6.5
+    - node --version
+    - travis_retry curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key
+      add -
+    - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    - travis_retry sudo apt-get update -qq
+    - travis_retry sudo apt-get install -y -qq yarn
+    - openssl aes-256-cbc -K $encrypted_12144853623e_key -iv $encrypted_12144853623e_iv
+      -in android/app/chronomint-beta.keystore.enc -out android/app/chronomint-beta.keystore
+      -d
+    install:
+    - yarn
+    script:
+    - yarn install
+    - cd ChronoMint && yarn install
+    - yarn run build
+    - cp -r ./build ../ios/build
+    - mkdir ../android/app/src/main/assets/ && cp -r  ./build/ ../android/app/src/main/assets/build
+    - cd ..
+    - cd android && ./gradlew assembleRelease
+    before_deploy:
+    - cp $TRAVIS_BUILD_DIR/.keystore $HOME
+    - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 $HOME/android/app-release-unsigned.apk
+      chronomint-beta -keystore $HOME/.keystore -storepass $storepass -keypass $keypass
+    - ${ANDROID_HOME}/build-tools/23.0.1/zipalign 4 $HOME/android/app-release-unsigned.apk
+      $HOME/android/chronomint-beta.apk
+    deploy:
+      provider: releases
+      api_key:
+        secure: oAFqKDdRX2+auiPNYFsApafNq6vimQnXU5hq1d0St56roh998wnpnb7KFHILBwHfGwVr8USsRikgCx1lcdWDmWC97MiOlxXRRaS+F7gy5i+f9amQRHlgu8paHC5ZpKwmtL4OZ98EFihk8qY5jl3KxH/mPxQyO/mA7WmzplzKinNU1wZUuI7ryx6NL8RH8LkFXjMLq7SW/QqKNkzmObHnzG4sy70iUx+/5NNUtWOwH7NqI6oP0Hc3gd5++r0PpfT2HeSqoKkpdDH+81ifIbm80miuK/d1e3HAYh+/AZH1WQc2bMkPQHIo5oQI3b9AmdWbd6ntlKJOrI//k6UvunU19AutZSM1rveaYFLxv5napN4HZsoDAaMGVhYBVOPLB1U2uAWg2pVBe70LJQU9XD1TnAbC8W2FB4T+OQy5RsqP4quaKSKJP7PMqUEuTLCD7vcRO87OhHrShbvs70J4cVGwiGY/LHuceg56jrciWfgCdr/DIybuDPGoy1blxNLQV3QrOjdIDbSWJp9N/8zVOcC/3Zy+RkQYK0IFVhJeWD2K0D9h9oBBWpGa71a1HuwooGzsUn6dGmaiumkxbTnd2ZpWhITUgPqTRDgGgi6Kp2aWFyiX0ZfMQXWT9QcT0v1e6PUtA+euGq6Z1Ktmw49/BORjx9tFA0RqPq4jzsdvKI7aUBs=
+      file: $HOME/android/chronomint-beta.apk
+      skip_cleanup: true
+      overwrite: true
+      on:
+        tags: true
+    global:
+    - secure: hVRAQP6GDovMsnxzdVUHngxt6WRIMPcgz4CnVL+IOU+ERVCEl244JNrh25zozqMo4Ak142T9skZYMdZFC0Ir8KE4CfdO2PXbxe+7nh1qzJ3Z/WCSdXSGnTDelLquElbOk12/Q0U3mXZtu3ZXcZY3DCNpaVCIhxNP5ky3wUK2watx+xXvcQqeP/l9z+Hr6a+qyUlXC1Z+dXLoYFCUo1NgYStSM/ixv4JLsmtCMmM729bKJt2C3owtckIvSIhlqM8kvbkJvRVqUHZ9BIKVK2/wsssFNVLPJeOjMgdV03UvdMjqj4pJ2xabVybiGSl+ixyZb/n/Vz7JKUzEhJAAYnam3M5g8hvBsFkXtwVGQjOx39BUXtHqo3jWqbh/25E5U4N6WoyWDFsO2vhl8CxgynijuFtzSITc7QqjDAyZLNSUYBNQu36iqwXFbiZpccW0qWpCoWmFpdXYHbJAoqSkK7VdIe/0cdHe+VPz32sWKSf3/T6bEaa15pR1DjH5Fqwv706OeQhSD43flS9ecGNM30duZ6Mg6RuvwMQ0cLlpI6oGt9k9M0nHSedXrgJH4e8npkR1kGevtgL68WpJ7IUQzxhXDHm1FhYksRSYAaXglOXkYeab30lrWIjHrCub69hnOsuJr2yJVPxSR18TS1JpyiPAhK/ifGEuoZhWFCB3kjUazk4=
+    - secure: ZUfJ8Kcs57IkZRUOP2dZBQ7OTaeVGYGtVhFF2T0CrHcIWCfSPzXfnJmqAfRbuJTqzXbNrHWjVSCcShTEzBAfggfi6Vc7RAT86MwH1iI4n6MIM1emUjO1+vcmqVGgctlkvX2g/j8RW/ROXBBc69ANUfOK0m/uwmtFtd3e9H6GWpvMFJ/VX07+yNQs9Co9Fvp+3VhDAZApLtAHX6j7H8OhdzZDntyH7Sf1XBzT/tF90tZkaeSeXSbuf9JUvLro9y7XSdyPjCnZQMqze9lqb8kXjQq2or5zVtNWUeZ47K0CEcXe8iu3kkapkTQEPiIK4cOg0URZVF/1RZu0PcP67gJoKd95MmuyCOjhiEXZKEP8hmrHbqPpymwyh3IPgJMWp7d1/JkEFM71CjcVcx42Aq3QCJafNAHx/It5ZegD5jKSEa+eq6FuXXjfks67Qo5IJdiNkUvT7156FxQQWq7WnR9p/aa6dJgmCKNQrdSzIgVQNnJDl+TwNP5aJXhA60203qqfCEB1CQ4FWo4Jw+TshrOrUKaBXIsKRk+NIKdJvIf72HH9hyJ8YXlQvjvhr6bXSx5a0PuZL767DH2ctQhxRQZo9xXS3nevJJ9HB4hxT/lgrul5/NJf5q8mmpC6Khw8o5rLDG6w9Iz4OlNDd3EP678wbbxAmhEeWQQOxAhefUgZJBY=
+  - language: objective-c
+    os: osx
+    osx_image: xcode8.2
+    node_js: false
+    before_install:
+    - nvm install 6.5
+    - node --version
+    - travis_retry npm install -g yarn
+    - yarn -version
+    install:
+    - travis_retry gem install xcpretty
+    - travis_retry yarn
+    - yarn install && yarn build
+    xcode_project: ios/ChronoMintApp.xcodeproj
+    script:
+    - cd ios
+    - xcodebuild -project ChronoMintApp.xcodeproj -configuration Release -scheme ChronoMintApp
+      CONFIGURATION_BUILD_DIR='~/build/' -sdk iphonesimulator | xcpretty
+env:
+  global:
+    secure: RoNrg5+iABMsRF9eaTwXOf8mIBO2qy5Xske8KzewEefxeIs4aqzSG3spzZJcTlI7g48S4hGusihA2o5kvLZZmF8+p/qYVn81G/LDRTiRRWkOcWrnGfBNvCkiZPGqgBfCnRiImWNg6h+rq1xiwUVjoR1gxVtPmkHFTTL1gjnDB0WEprHzUWvWWejb6qaY5eQM5483w5tRxq2UGulyIB723xbjOPwDMadGPwmVqq5VMcMYvpj3F+0AeJpWIvsHh/MNGnm4Ki9CmwL+/1BuOJ8bSU/FU61u79FHldKP9C7YE/WpJFLy6JJDJZcYnKF+ucIdVCK7aeHCbF/SWKDrzrIxn1y3mW1P1wcYjEKbHUE6BG/Q/CsLhW3ArlmsI8TTGuEIffQNlozw3UtkYiSTCKhP/dS/GoPxcmBRy7V31u/MrLiB3Ync7DTAYUgjY8g3vBljMBVIS62Y8zuQpQDrekNQ3YL9QMAB3CpICK/PPNayhxunJQStD1aUgzMNXo7iCktXPaj6D1U0oA5fq0HS2+1PxQZXjSvMOAk/oAkuz6OXLBMVxcAOXvwzBrxqOvGxO2+hfpGrpwwDYPnk97/WwZxUFcWqyOZKH/7198b8r+5PHMOGDZ6nMLThKAOtkboCATL96b5sRCVswXGYmKuiehAj+tp8sPH2AXX64HwU3bidcOo=

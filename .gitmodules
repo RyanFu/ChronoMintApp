@@ -1,4 +1,3 @@
 [submodule "ChronoMint"]
 	path = ChronoMint
 	url = https://github.com/ChronoBank/ChronoMint.git
-	branch = develop

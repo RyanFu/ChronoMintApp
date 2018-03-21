@@ -1,25 +1,25 @@
 {
-	"name": "ChronoMintApp",
-	"version": "0.0.1",
-	"scripts": {
-		"start": "node node_modules/react-native/local-cli/cli.js start",
-		"build": "cd ChronoMint && yarn install && yarn run build && cp -r ./build ../ios/www && mkdir -p ../android/app/src/main/assets/ && cp -r  ./build/ ../android/app/src/main/assets/www && cd ..",
-		"clean": "rm -rf ./ChronoMint/build ./ChronoMint/node_modules ./ios/www ./android/app/src/main/assets/www",
-		"test": "jest"
-	},
-	"dependencies": {
-		"react": "16.0.0-alpha.12",
-		"react-native": "0.46.0",
-		"react-native-fs": "^2.3.3",
-		"react-native-static-server": "^0.1.7"
-	},
-	"devDependencies": {
-		"babel-jest": "20.0.3",
-		"babel-preset-react-native": "2.0.0",
-		"jest": "20.0.4",
-		"react-test-renderer": "16.0.0-alpha.12"
-	},
-	"jest": {
-		"preset": "react-native"
-	}
+  "name": "ChronoMintApp",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "build": "cd ChronoMint && yarn install && yarn run build && cp -r ./build ../ios/www && mkdir -p ../android/app/src/main/assets/ && cp -r  ./build/ ../android/app/src/main/assets/www && cd ..",
+    "clean": "rm -rf ./ChronoMint/build ./ChronoMint/node_modules ./ios/www ./android/app/src/main/assets/www",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.0.0-alpha.12",
+    "react-native": "0.50.0",
+    "react-native-fs": "^2.3.3",
+    "react-native-static-server": "^0.1.7"
+  },
+  "devDependencies": {
+    "babel-jest": "20.0.3",
+    "babel-preset-react-native": "2.0.0",
+    "jest": "20.0.4",
+    "react-test-renderer": "16.0.0-alpha.12"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
 }
